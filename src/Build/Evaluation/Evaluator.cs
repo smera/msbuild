@@ -1043,10 +1043,8 @@ namespace Microsoft.Build.Evaluation
                 using (_evaluationPerformanceCounter.TrackPass(3.1, "Lazy Items (Pass 3.1)"))
                 {
                     // Tell the lazy evaluator to compute the items and add them to _data
-                    IList<LazyItemEvaluator<P, I, M, D>.ItemData> items = lazyEvaluator.GetAllItems();
                     foreach (var itemData in lazyEvaluator.GetAllItemsDeferred())
                     {
-                        var itemData = items[i];
                         if (itemData.ConditionResult)
                         {
                             _data.AddItem(itemData.Item);

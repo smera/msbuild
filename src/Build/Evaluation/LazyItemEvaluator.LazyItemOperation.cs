@@ -54,7 +54,7 @@ namespace Microsoft.Build.Evaluation
             {
                 using (_lazyEvaluator._evaluationPerformanceCounter.TrackElement(_itemElement))
                 {
-                    var items = SelectItems(listBuilder, globsToIgnore).ToList();
+                    var items = SelectItems(listBuilder, globsToIgnore);
                     MutateItems(items);
                     SaveItems(items, listBuilder);
                 }
