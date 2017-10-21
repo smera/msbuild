@@ -32,6 +32,7 @@ namespace Microsoft.Build.Evaluation
         private readonly Expander<P, I> _expander;
         private readonly IItemFactory<I, I> _itemFactory;
         private readonly LoggingContext _loggingContext;
+        private readonly EvaluationPerformanceCounter _evaluationPerformanceCounter;
 
         private int _nextElementOrder = 0;
 
@@ -59,6 +60,7 @@ namespace Microsoft.Build.Evaluation
             _expander = new Expander<P, I>(_evaluatorData, _evaluatorData);
             _itemFactory = itemFactory;
             _loggingContext = loggingContext;
+            _evaluationPerformanceCounter = evaluationPerformanceCounter;
         }
 
         private ICollection<ItemData> GetItems(string itemType)
@@ -83,19 +85,22 @@ namespace Microsoft.Build.Evaluation
                 return true;
             }
 
-            bool result = ConditionEvaluator.EvaluateCondition
-                (
-                condition,
-                parserOptions,
-                expander,
-                expanderOptions,
-                GetCurrentDirectoryForConditionEvaluation(element, lazyEvaluator),
-                element.ConditionLocation,
-                lazyEvaluator._loggingContext.LoggingService,
-                lazyEvaluator._loggingContext.BuildEventContext
-                );
+            using (lazyEvaluator._evaluationPerformanceCounter.TraceCondition(element.ConditionLocation, condition))
+            {
+                bool result = ConditionEvaluator.EvaluateCondition
+                    (
+                    condition,
+                    parserOptions,
+                    expander,
+                    expanderOptions,
+                    GetCurrentDirectoryForConditionEvaluation(element, lazyEvaluator),
+                    element.ConditionLocation,
+                    lazyEvaluator._loggingContext.LoggingService,
+                    lazyEvaluator._loggingContext.BuildEventContext
+                    );
 
-            return result;
+                return result;
+            }
         }
 
         private static bool EvaluateCondition(ProjectElement element, ExpanderOptions expanderOptions, ParserOptions parserOptions, Expander<P, I> expander, LazyItemEvaluator<P, I, M, D> lazyEvaluator)
@@ -340,6 +345,7 @@ namespace Microsoft.Build.Evaluation
                 {
                     var currentList = itemListStack.Pop();
 
+                    
                     //  If this is a remove operation, then it could modify the globs to ignore, so pop the potentially
                     //  modified entry off the stack of globs to ignore
                     var removeOperation = currentList._memoizedOperation.Operation as RemoveOperation;
