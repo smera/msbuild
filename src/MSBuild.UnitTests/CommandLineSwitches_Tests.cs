@@ -1125,7 +1125,8 @@ namespace Microsoft.Build.UnitTests
                                         false, 
                                         warningsAsErrors: null,
                                         warningsAsMessages: null,
-                                        enableRestore: false);
+                                        enableRestore: false,
+                                        profilerLogger: null);
                 }
                 finally
                 {
