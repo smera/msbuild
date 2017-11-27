@@ -80,13 +80,15 @@ namespace Microsoft.Build.Logging
 
             while (!_profiledResults.IsEmpty)
             {
-                var result = _profiledResults.TryDequeue(out var profiledResult);
+                ProfilerResult profiledResult;
+                var result = _profiledResults.TryDequeue(out profiledResult);
                 Debug.Assert(result, "Expected a non empty queue, this method is not supposed to be called in a multithreaded way");
 
                 foreach (var pair in profiledResult.ProfiledLocations)
                 {
                     //  Add elapsed times to evaluation counter dictionaries
-                    if (!aggregatedResults.TryGetValue(pair.Key, out var previousTimeSpent))
+                    ProfiledLocation previousTimeSpent;
+                    if (!aggregatedResults.TryGetValue(pair.Key, out previousTimeSpent))
                     {
                         previousTimeSpent = new ProfiledLocation(TimeSpan.Zero, TimeSpan.Zero, 0);
                     }

@@ -49,7 +49,8 @@ namespace Microsoft.Build.Framework.Profiler
             : this(evaluationPassOrdinal, evaluationPass, file, line, element?.ElementName, element?.OuterXmlElement, isElement: true)
         {}
 
-        private EvaluationLocation(double evaluationPassOrdinal, string evaluationPass, string file, int? line, string elementName, string elementOrCondition, bool isElement)
+        /// <nodoc/>
+        public EvaluationLocation(double evaluationPassOrdinal, string evaluationPass, string file, int? line, string elementName, string elementOrCondition, bool isElement)
         {
             EvaluationPassOrdinal = evaluationPassOrdinal;
             EvaluationPass = evaluationPass;

@@ -531,6 +531,7 @@ namespace Microsoft.Build.Framework.Profiler
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public partial struct EvaluationLocation
     {
+        public EvaluationLocation(double evaluationPassOrdinal, string evaluationPass, string file, System.Nullable<int> line, string elementName, string elementOrCondition, bool isElement) { throw null;}
         public string ElementName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string ElementOrCondition { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public static Microsoft.Build.Framework.Profiler.EvaluationLocation EmptyLocation { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }

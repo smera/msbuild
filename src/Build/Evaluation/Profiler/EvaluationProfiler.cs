@@ -120,7 +120,8 @@ namespace Microsoft.Build.Evaluation
                 }
 
                 //  Add elapsed times to evaluation counter dictionaries
-                if (!_evaluationProfiler.ProfiledResult.ProfiledLocations.TryGetValue(Location, out var previousTimeSpent))
+                ProfiledLocation previousTimeSpent;
+                if (!_evaluationProfiler.ProfiledResult.ProfiledLocations.TryGetValue(Location, out previousTimeSpent))
                 {
                     previousTimeSpent = new ProfiledLocation(TimeSpan.Zero, TimeSpan.Zero, 0);
                 }
