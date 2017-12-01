@@ -29,7 +29,7 @@ namespace Microsoft.Build.Evaluation
         {
             var profiledLocations = result.ProfiledLocations;
             var evaluationPasses = profiledLocations.Where(l => l.Key.File == null)
-                                                  .OrderBy(l => l.Key.EvaluationPassOrdinal);
+                                                  .OrderBy(l => l.Key.EvaluationPass);
 
             var orderedLocations = profiledLocations.Where(l => l.Key.File != null)
                                                   .OrderByDescending(l => l.Value.ExclusiveTime);
@@ -51,7 +51,7 @@ namespace Microsoft.Build.Evaluation
                 }
 
                 stringBuilder.AppendLine(string.Join("|",
-                    location.EvaluationPass,
+                    location.EvaluationDescription,
                     string.Empty,
                     string.Empty,
                     string.Empty,
@@ -73,7 +73,7 @@ namespace Microsoft.Build.Evaluation
                     continue;
 
                 stringBuilder.AppendLine(string.Join("|",
-                    location.EvaluationPass,
+                    location.EvaluationDescription,
                     location.File == null ? string.Empty : Path.GetFileName(location.File),
                     location.Line?.ToString() ?? string.Empty,
                     GetExpression(location.ElementOrCondition, location.IsElement),

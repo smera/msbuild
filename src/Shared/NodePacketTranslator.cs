@@ -1425,7 +1425,7 @@ namespace Microsoft.Build.BackEnd
                     if (translator.TranslateNullable(val))
                     {
                         var profilerResult = val.Value;
-                        SerializedBuildEventArgs.TranslateProfilerResult(translator, ref profilerResult);
+                        ProfilerResultTranslator.Translate(translator, ref profilerResult);
                         val = profilerResult;
                     }
                     FieldValue = val;
@@ -1480,6 +1480,103 @@ namespace Microsoft.Build.BackEnd
                 foreach (var serializedField in serializedFields)
                 {
                     serializedField.Field.SetValue(obj, serializedField.FieldValue);
+                }
+            }
+        }
+
+        public static class ProfilerResultTranslator
+        {
+            public static void Translate(INodePacketTranslator translator, ref ProfilerResult profilerResult)
+            {
+                if (translator.TranslateNullable(profilerResult))
+                {
+                    IDictionary<EvaluationLocation, ProfiledLocation> profiledLocations = new Dictionary<EvaluationLocation, ProfiledLocation>();
+                    if (translator.Mode == TranslationDirection.WriteToStream)
+                    {
+                        profiledLocations = profilerResult.ProfiledLocations.ToDictionary(kv => kv.Key, kv => kv.Value);
+                    }
+
+                    translator.TranslateDictionary(ref profiledLocations,
+                        TranslatorForEvaluationLocation, TranslatorForProfiledLocation,
+                        count => new Dictionary<EvaluationLocation, ProfiledLocation>());
+
+                    if (translator.Mode == TranslationDirection.ReadFromStream)
+                    {
+                        profilerResult = new ProfilerResult(new ReadOnlyDictionary<EvaluationLocation, ProfiledLocation>(profiledLocations));
+                    }
+                }
+            }
+
+            private static void TranslatorForEvaluationLocation(ref EvaluationLocation evaluationLocation,
+                INodePacketTranslator translator)
+            {
+                EvaluationPass evaluationPass = default(EvaluationPass);
+                string evaluationPassDescription = null;
+                string file = null;
+                int? line = null;
+                string elementName = null;
+                string elementOrCondition = null;
+                bool isElement = false;
+
+                if (translator.Mode == TranslationDirection.WriteToStream)
+                {
+                    evaluationPass = evaluationLocation.EvaluationPass;
+                    evaluationPassDescription = evaluationLocation.EvaluationDescription;
+                    file = evaluationLocation.File;
+                    line = evaluationLocation.Line;
+                    elementName = evaluationLocation.ElementName;
+                    elementOrCondition = evaluationLocation.ElementOrCondition;
+                    isElement = evaluationLocation.IsElement;
+                }
+
+                translator.TranslateEnum(ref evaluationPass, (int)evaluationPass);
+                translator.Translate(ref evaluationPassDescription);
+                translator.Translate(ref file);
+
+                if (translator.TranslateNullable(line))
+                {
+                    var lineValue = 0;
+                    if (translator.Mode == TranslationDirection.WriteToStream)
+                    {
+                        lineValue = line.Value;
+                    }
+                    translator.Translate(ref lineValue);
+                    if (translator.Mode == TranslationDirection.ReadFromStream)
+                    {
+                        line = lineValue;
+                    }
+                }
+
+                translator.Translate(ref elementName);
+                translator.Translate(ref elementOrCondition);
+                translator.Translate(ref isElement);
+
+                if (translator.Mode == TranslationDirection.ReadFromStream)
+                {
+                    evaluationLocation = new EvaluationLocation(evaluationPass, evaluationPassDescription, file, line, elementName, elementOrCondition, isElement);
+                }
+            }
+
+            private static void TranslatorForProfiledLocation(ref ProfiledLocation profiledLocation, INodePacketTranslator translator)
+            {
+                var inclusiveTime = TimeSpan.Zero;
+                var exclusiveTime = TimeSpan.Zero;
+                var numberOfHits = 0;
+
+                if (translator.Mode == TranslationDirection.WriteToStream)
+                {
+                    inclusiveTime = profiledLocation.InclusiveTime;
+                    exclusiveTime = profiledLocation.ExclusiveTime;
+                    numberOfHits = profiledLocation.NumberOfHits;
+                }
+
+                translator.Translate(ref inclusiveTime);
+                translator.Translate(ref exclusiveTime);
+                translator.Translate(ref numberOfHits);
+
+                if (translator.Mode == TranslationDirection.ReadFromStream)
+                {
+                    profiledLocation = new ProfiledLocation(inclusiveTime, exclusiveTime, numberOfHits);
                 }
             }
         }
@@ -1565,93 +1662,6 @@ namespace Microsoft.Build.BackEnd
                     {
                         context = new BuildEventContext(submissionId, nodeId, projectInstanceId, projectContextId, targetId, taskId);
                     }
-                }
-            }
-
-            public static void TranslateProfilerResult(INodePacketTranslator translator, ref ProfilerResult profilerResult)
-            {
-                if (translator.TranslateNullable(profilerResult))
-                {
-                    IDictionary<EvaluationLocation, ProfiledLocation> profiledLocations = new Dictionary<EvaluationLocation, ProfiledLocation>();
-                    if (translator.Mode == TranslationDirection.WriteToStream)
-                    {
-                        profiledLocations = profilerResult.ProfiledLocations.ToDictionary(kv => kv.Key, kv => kv.Value);
-                    }
-
-                    translator.TranslateDictionary(ref profiledLocations,
-                        TranslatorForEvaluationLocation, TranslatorForProfiledLocation,
-                        count => new Dictionary<EvaluationLocation, ProfiledLocation>());
-
-                    if (translator.Mode == TranslationDirection.ReadFromStream)
-                    {
-                        profilerResult = new ProfilerResult(new ReadOnlyDictionary<EvaluationLocation, ProfiledLocation>(profiledLocations));
-                    }
-                }
-            }
-
-            private static void TranslatorForEvaluationLocation(ref EvaluationLocation evaluationLocation,
-                INodePacketTranslator translator)
-            {
-                double evaluationPassOrdinal = 0;
-                string evaluationPass = null;
-                string file = null;
-                int? line = null;
-                string elementName = null;
-                string elementOrCondition = null;
-                bool isElement = false;
-
-                if (translator.Mode == TranslationDirection.WriteToStream)
-                {
-                    evaluationPassOrdinal = evaluationLocation.EvaluationPassOrdinal;
-                    evaluationPass = evaluationLocation.EvaluationPass;
-                    file = evaluationLocation.File;
-                    line = evaluationLocation.Line;
-                    elementName = evaluationLocation.ElementName;
-                    elementOrCondition = evaluationLocation.ElementOrCondition;
-                    isElement = evaluationLocation.IsElement;
-                }
-
-                translator.Translate(ref evaluationPassOrdinal);
-                translator.Translate(ref evaluationPass);
-                translator.Translate(ref file);
-
-                if (translator.TranslateNullable(line))
-                {
-                    var lineValue = line.Value;
-                    translator.Translate(ref lineValue);
-                    line = lineValue;
-                }
-
-                translator.Translate(ref elementName);
-                translator.Translate(ref elementOrCondition);
-                translator.Translate(ref isElement);
-
-                if (translator.Mode == TranslationDirection.ReadFromStream)
-                {
-                    evaluationLocation = new EvaluationLocation(evaluationPassOrdinal, evaluationPass, file, line, elementName, elementOrCondition, isElement);
-                }
-            }
-
-            private static void TranslatorForProfiledLocation(ref ProfiledLocation profiledLocation, INodePacketTranslator translator)
-            {
-                var inclusiveTime = TimeSpan.Zero;
-                var exclusiveTime = TimeSpan.Zero;
-                var numberOfHits = 0;
-
-                if (translator.Mode == TranslationDirection.WriteToStream)
-                {
-                    inclusiveTime = profiledLocation.InclusiveTime;
-                    exclusiveTime = profiledLocation.ExclusiveTime;
-                    numberOfHits = profiledLocation.NumberOfHits;
-                }
-
-                translator.Translate(ref inclusiveTime);
-                translator.Translate(ref exclusiveTime);
-                translator.Translate(ref numberOfHits);
-
-                if (translator.Mode == TranslationDirection.ReadFromStream)
-                {
-                    profiledLocation = new ProfiledLocation(inclusiveTime, exclusiveTime, numberOfHits);
                 }
             }
 

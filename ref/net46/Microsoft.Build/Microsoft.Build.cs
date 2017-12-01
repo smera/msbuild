@@ -1547,7 +1547,7 @@ namespace Microsoft.Build.Logging
         public string FileToLog { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.Build.Framework.LoggerVerbosity Verbosity { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.Build.Framework.Profiler.ProfilerResult GetAggregatedProfiledResult() { throw null; }
+        public Microsoft.Build.Framework.Profiler.ProfilerResult GetAggregatedResult() { throw null; }
         public void Initialize(Microsoft.Build.Framework.IEventSource eventSource) { }
         public void Shutdown() { }
     }

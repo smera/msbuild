@@ -41,9 +41,12 @@ namespace Microsoft.Build.Evaluation
 
         /// <nodoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IDisposable TrackPass(double ordinal, string pass)
+        public IDisposable TrackPass(EvaluationPass evaluationPass, string passDescription = null)
         {
-            return _shouldTrackElements ? new EvaluationFrame(this, CurrentLocation.WithEvaluationPass(ordinal, pass)) : null;
+            return _shouldTrackElements
+                ? new EvaluationFrame(this,
+                    CurrentLocation.WithEvaluationPass(evaluationPass, passDescription))
+                : null;
         }
 
         /// <nodoc/>

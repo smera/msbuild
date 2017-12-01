@@ -1145,4 +1145,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
   <data name="WritingProfilerReportDone" xml:space="preserve">
     <value>Done writing report.</value>
   </data>
+  <data name="MissingProfileParameterError" xml:space="preserve">
+    <value>MSBUILD :error MSB1054: A filename must be specified to generate the profiler result.</value>
+  </data>
 </root>

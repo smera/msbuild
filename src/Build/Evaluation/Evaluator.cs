@@ -394,7 +394,7 @@ namespace Microsoft.Build.Evaluation
 #endif
                 Evaluator<P, I, M, D> evaluator = new Evaluator<P, I, M, D>(data, root, loadSettings, maxNodeCount, environmentProperties, itemFactory, toolsetProvider, projectRootElementCache, projectInstanceIfAnyForDebuggerOnly, sdkResolution);
                 IDictionary<string, object> projectLevelLocalsForBuild;
-                using (evaluator._evaluationProfiler.TrackPass(-1, "Total Evaluation"))
+                using (evaluator._evaluationProfiler.TrackPass(EvaluationPass.TotalEvaluation))
                 {
                     projectLevelLocalsForBuild = evaluator.Evaluate(loggingService, buildEventContext);
                 }
@@ -751,7 +751,7 @@ namespace Microsoft.Build.Evaluation
             ICollection<P> toolsetProperties;
             ICollection<P> globalProperties;
 
-            using (_evaluationProfiler.TrackPass(0, "Initial Properties (Pass 0)"))
+            using (_evaluationProfiler.TrackPass(EvaluationPass.InitialProperties))
             {
                 // Pass0: load initial properties
                 // Follow the order of precedence so that Global properties overwrite Environment properties
@@ -814,7 +814,7 @@ namespace Microsoft.Build.Evaluation
 #endif
 
             // Pass1: evaluate properties, load imports, and gather everything else
-            using (_evaluationProfiler.TrackPass(1, "Properties (Pass 1)"))
+            using (_evaluationProfiler.TrackPass(EvaluationPass.Properties))
             {
                 PerformDepthFirstPass(_projectRootElement);
             }
@@ -835,7 +835,7 @@ namespace Microsoft.Build.Evaluation
 #endif
             // Pass2: evaluate item definitions
             // Don't box via IEnumerator and foreach; cache count so not to evaluate via interface each iteration
-            using (_evaluationProfiler.TrackPass(2, "ItemDefinitionGroup (Pass 2)"))
+            using (_evaluationProfiler.TrackPass(EvaluationPass.ItemDefintionGroups))
             {
                 foreach (var itemDefinitionGroupElement in _itemDefinitionGroupElements)
                 {
@@ -853,7 +853,7 @@ namespace Microsoft.Build.Evaluation
         DataCollection.CommentMarkProfile(8818, endPass2);
 #endif
             LazyItemEvaluator<P, I, M, D> lazyEvaluator = null;
-            using (_evaluationProfiler.TrackPass(3, "Items (Pass 3)"))
+            using (_evaluationProfiler.TrackPass(EvaluationPass.Items))
             {
                 // comment next line to turn off lazy Evaluation
                 lazyEvaluator = new LazyItemEvaluator<P, I, M, D>(_data, _itemFactory, _evaluationLoggingContext, _evaluationProfiler);
@@ -870,7 +870,7 @@ namespace Microsoft.Build.Evaluation
 
             if (lazyEvaluator != null)
             {
-                using (_evaluationProfiler.TrackPass(3.1, "Lazy Items (Pass 3.1)"))
+                using (_evaluationProfiler.TrackPass(EvaluationPass.LazyItems))
                 {
                     // Tell the lazy evaluator to compute the items and add them to _data
                     foreach (var itemData in lazyEvaluator.GetAllItemsDeferred())
@@ -904,7 +904,7 @@ namespace Microsoft.Build.Evaluation
         DataCollection.CommentMarkProfile(8819, endPass3);
 #endif
             // Pass4: evaluate using-tasks
-            using (_evaluationProfiler.TrackPass(4, "UsingTasks (Pass 4)"))
+            using (_evaluationProfiler.TrackPass(EvaluationPass.UsingTasks))
             {
                 foreach (var entry in _usingTaskElements)
                 {
@@ -938,7 +938,7 @@ namespace Microsoft.Build.Evaluation
         DataCollection.CommentMarkProfile(8820, endPass4);
 #endif
 
-            using (_evaluationProfiler.TrackPass(5, "Targets (Pass 5)"))
+            using (_evaluationProfiler.TrackPass(EvaluationPass.Targets))
             {
                 // Pass5: read targets (but don't evaluate them: that happens during build)
                 for (var i = 0; i < targetElementsCount; i++)

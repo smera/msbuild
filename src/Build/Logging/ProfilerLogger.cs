@@ -74,7 +74,7 @@ namespace Microsoft.Build.Logging
         /// <remarks>
         /// Not thread safe, this method is expected to be called once per build
         /// </remarks>
-        public ProfilerResult GetAggregatedProfiledResult()
+        public ProfilerResult GetAggregatedResult()
         {
             var aggregatedResults = new Dictionary<EvaluationLocation, ProfiledLocation>();
 

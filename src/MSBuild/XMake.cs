@@ -780,7 +780,7 @@ namespace Microsoft.Build.CommandLine
                 var profilerFile = profilerLogger.FileToLog;
                 Console.WriteLine(ResourceUtilities.FormatResourceString("WritingProfilerReport", profilerFile));
 
-                var content = ProfilerResultPrettyPrinter.GetMarkdownContent(profilerLogger.GetAggregatedProfiledResult());
+                var content = ProfilerResultPrettyPrinter.GetMarkdownContent(profilerLogger.GetAggregatedResult());
                 File.WriteAllText(profilerFile, content);
 
                 Console.WriteLine(ResourceUtilities.GetResourceString("WritingProfilerReportDone"));
