@@ -261,7 +261,10 @@
   </ItemGroup>
   <!-- Assemblies Files we depend on -->
   <ItemGroup Condition="'$(NetCoreBuild)' != 'true'">
-    <Reference Include="System" />
+    <Reference Include="mscorlib">
+		<Aliases>global,mscorlib</Aliases>
+	</Reference>
+	<Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />

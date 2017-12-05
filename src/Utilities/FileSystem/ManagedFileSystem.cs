@@ -1,0 +1,76 @@
+﻿using System.Collections.Generic;
+using System.IO;
+
+namespace Microsoft.Build.Utilities.FileSystem
+{
+    public sealed class ManagedFileSystem : IFileSystemAbstraction
+    {
+        private static readonly ManagedFileSystem Instance = new ManagedFileSystem();
+
+        /// <nodoc/>
+        public static ManagedFileSystem Singleton() => ManagedFileSystem.Instance;
+
+        private ManagedFileSystem()
+        { }
+
+        /// <inheritdoc/>
+        public IEnumerable<string> EnumerateFiles(string path)
+        {
+            return Directory.EnumerateFiles(path);
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<string> EnumerateFiles(string path, string searchPattern)
+        {
+            return Directory.EnumerateFiles(path, searchPattern);
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<string> EnumerateFiles(string path, string searchPattern, SearchOption searchOption)
+        {
+            return Directory.EnumerateFiles(path, searchPattern, searchOption);
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<string> EnumerateDirectories(string path)
+        {
+            return Directory.EnumerateDirectories(path);
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<string> EnumerateDirectories(string path, string searchPattern)
+        {
+            return Directory.EnumerateDirectories(path, searchPattern);
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<string> EnumerateDirectories(string path, string searchPattern, SearchOption searchOption)
+        {
+            return Directory.EnumerateDirectories(path, searchPattern, searchOption);
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<string> EnumerateFileSystemEntries(string path)
+        {
+            return Directory.EnumerateFileSystemEntries(path);
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern)
+        {
+            return Directory.EnumerateFileSystemEntries(path, searchPattern);
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern, SearchOption searchOption)
+        {
+            return Directory.EnumerateFileSystemEntries(path, searchPattern, searchOption);
+        }
+
+        /// <inheritdoc/>
+        public bool Exists(string path)
+        {
+            return Directory.Exists(path);
+        }
+    }
+}

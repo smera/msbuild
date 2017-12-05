@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.Build.Utilities;
+using Microsoft.Build.Utilities.FileSystem;
 
 namespace Microsoft.Build.Shared
 {
@@ -41,8 +42,13 @@ namespace Microsoft.Build.Shared
         internal static readonly char[] directorySeparatorCharacters = { '/', '\\' };
         internal static readonly string[] directorySeparatorStrings = directorySeparatorCharacters.Select(c => c.ToString()).ToArray();
 
-        internal static readonly GetFileSystemEntries s_defaultGetFileSystemEntries = new GetFileSystemEntries(GetAccessibleFileSystemEntries);
-        private static readonly DirectoryExists s_defaultDirectoryExists = new DirectoryExists(Directory.Exists);
+        // For now we hardcode the file system to use here. TODO: extend the interface and plumb it through the evaluator
+        internal static readonly IFileSystemAbstraction DefaultFileSystem = ManagedFileSystem.Singleton();
+
+        internal static readonly GetFileSystemEntries s_defaultGetFileSystemEntries =
+            new GetFileSystemEntries((entityType, path, pattern, projectDirectory, stripProjectDirectory) =>
+                GetAccessibleFileSystemEntries(DefaultFileSystem, entityType, path, pattern, projectDirectory, stripProjectDirectory));
+        private static readonly DirectoryExists s_defaultDirectoryExists = new DirectoryExists(DefaultFileSystem.Exists);
 
         private static readonly Lazy<ConcurrentDictionary<string, string[]>> s_cachedFileEnumerations = new Lazy<ConcurrentDictionary<string, string[]>>(() => new ConcurrentDictionary<string, string[]>(StringComparer.OrdinalIgnoreCase));
         private static readonly Lazy<ConcurrentDictionary<string, object>> s_cachedFileEnumerationsLock = new Lazy<ConcurrentDictionary<string, object>>(() => new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase));
@@ -122,14 +128,14 @@ namespace Microsoft.Build.Shared
         /// <param name="projectDirectory">The directory for the project within which the call is made</param>
         /// <param name="stripProjectDirectory">If true the project directory should be stripped</param>
         /// <returns></returns>
-        private static ImmutableArray<string> GetAccessibleFileSystemEntries(FileSystemEntity entityType, string path, string pattern, string projectDirectory, bool stripProjectDirectory)
+        private static ImmutableArray<string> GetAccessibleFileSystemEntries(IFileSystemAbstraction fileSystem, FileSystemEntity entityType, string path, string pattern, string projectDirectory, bool stripProjectDirectory)
         {
             path = FileUtilities.FixFilePath(path);
             switch (entityType)
             {
-                case FileSystemEntity.Files: return GetAccessibleFiles(path, pattern, projectDirectory, stripProjectDirectory);
-                case FileSystemEntity.Directories: return GetAccessibleDirectories(path, pattern);
-                case FileSystemEntity.FilesAndDirectories: return GetAccessibleFilesAndDirectories(path, pattern);
+                case FileSystemEntity.Files: return GetAccessibleFiles(fileSystem, path, pattern, projectDirectory, stripProjectDirectory);
+                case FileSystemEntity.Directories: return GetAccessibleDirectories(fileSystem, path, pattern);
+                case FileSystemEntity.FilesAndDirectories: return GetAccessibleFilesAndDirectories(fileSystem,path, pattern);
                 default:
                     ErrorUtilities.VerifyThrow(false, "Unexpected filesystem entity type.");
                     break;
@@ -144,16 +150,16 @@ namespace Microsoft.Build.Shared
         /// <param name="path"></param>
         /// <param name="pattern"></param>
         /// <returns>An immutable array of matching file system entries (can be empty).</returns>
-        private static ImmutableArray<string> GetAccessibleFilesAndDirectories(string path, string pattern)
+        private static ImmutableArray<string> GetAccessibleFilesAndDirectories(IFileSystemAbstraction fileSystem, string path, string pattern)
         {
             if (Directory.Exists(path))
             {
                 try
                 {
                     return (ShouldEnforceMatching(pattern)
-                        ? Directory.EnumerateFileSystemEntries(path, pattern)
+                        ? fileSystem.EnumerateFileSystemEntries(path, pattern)
                             .Where(o => IsMatch(Path.GetFileName(o), pattern, true))
-                        : Directory.EnumerateFileSystemEntries(path, pattern)
+                        : fileSystem.EnumerateFileSystemEntries(path, pattern)
                     ).ToImmutableArray();
                 }
                 // for OS security
@@ -209,6 +215,7 @@ namespace Microsoft.Build.Shared
         /// <returns>Files that can be accessed.</returns>
         private static ImmutableArray<string> GetAccessibleFiles
         (
+            IFileSystemAbstraction fileSystem,
             string path,
             string filespec,     // can be null
             string projectDirectory,
@@ -224,11 +231,11 @@ namespace Microsoft.Build.Shared
                 IEnumerable<string> files;
                 if (filespec == null)
                 {
-                    files = Directory.EnumerateFiles(dir);
+                    files = fileSystem.EnumerateFiles(dir);
                 }
                 else
                 {
-                    files = Directory.EnumerateFiles(dir, filespec);
+                    files = fileSystem.EnumerateFiles(dir, filespec);
                     if (ShouldEnforceMatching(filespec))
                     {
                         files = files.Where(o => IsMatch(Path.GetFileName(o), filespec, true));
@@ -275,6 +282,7 @@ namespace Microsoft.Build.Shared
         /// <returns>Accessible directories.</returns>
         private static ImmutableArray<string> GetAccessibleDirectories
         (
+            IFileSystemAbstraction fileSystem,
             string path,
             string pattern
         )
@@ -285,11 +293,11 @@ namespace Microsoft.Build.Shared
 
                 if (pattern == null)
                 {
-                    directories = Directory.EnumerateDirectories((path.Length == 0) ? s_thisDirectory : path);
+                    directories = fileSystem.EnumerateDirectories((path.Length == 0) ? s_thisDirectory : path);
                 }
                 else
                 {
-                    directories = Directory.EnumerateDirectories((path.Length == 0) ? s_thisDirectory : path, pattern);
+                    directories = fileSystem.EnumerateDirectories((path.Length == 0) ? s_thisDirectory : path, pattern);
                     if (ShouldEnforceMatching(pattern))
                     {
                         directories = directories.Where(o => IsMatch(Path.GetFileName(o), pattern, true));
