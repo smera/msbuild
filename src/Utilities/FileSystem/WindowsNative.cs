@@ -1,17 +1,18 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 
-#pragma warning disable 1591 // disabling warning about missing API documentation; TODO: Remove this line and write documentation!
-#pragma warning disable CA1823 // Unused field
-#pragma warning disable SA1203 // Constant fields must appear before non-constant fields
-#pragma warning disable SA1139 // Use literal suffix notation instead of casting
-
 namespace Microsoft.Build.Utilities.FileSystem
 {
+    /// <summary>
+    /// Native implementation of file system operations
+    /// </summary>
     public static class WindowsNative
     {
         /// <summary>
@@ -247,6 +248,5 @@ namespace Microsoft.Build.Utilities.FileSystem
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool FindClose(IntPtr findFileHandle);
-
     }
 }

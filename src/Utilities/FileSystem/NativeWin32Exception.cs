@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -29,7 +32,7 @@ namespace Microsoft.Build.Utilities.FileSystem
         {
             // Win32Exception does not initialize HResult but many others like IOException do.
             // In order to have a uniform error checking, initialize HResult using something similar to HRESULT_FROM_WIN32
-            HResult = Utilities.ExceptionUtilities.HResultFromWin32(nativeErrorCode);
+            HResult = HResultFromWin32(nativeErrorCode);
         }
 
         /// <summary>
@@ -56,6 +59,19 @@ namespace Microsoft.Build.Utilities.FileSystem
             {
                 return string.Format(CultureInfo.InvariantCulture, "Native: 0x{0:X}: {1}", nativeErrorCode, systemMessage);
             }
+        }
+
+        /// <summary>
+        /// Converts a Win32 error code to HResult
+        /// </summary>
+        public static int HResultFromWin32(int nativeErrorCode)
+        {
+            if (nativeErrorCode < 0 || nativeErrorCode > 0xFFFF)
+            {
+                return nativeErrorCode;
+            }
+
+            return unchecked((int)0x80070000) | nativeErrorCode;
         }
     }
 }

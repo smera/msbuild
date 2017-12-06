@@ -1,8 +1,14 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Collections.Generic;
 using System.IO;
 
 namespace Microsoft.Build.Utilities.FileSystem
 {
+    /// <summary>
+    /// Implementation of file system operations directly over the dot net managed layer
+    /// </summary>
     public sealed class ManagedFileSystem : IFileSystemAbstraction
     {
         private static readonly ManagedFileSystem Instance = new ManagedFileSystem();
@@ -68,7 +74,7 @@ namespace Microsoft.Build.Utilities.FileSystem
         }
 
         /// <inheritdoc/>
-        public bool Exists(string path)
+        public bool DirectoryExists(string path)
         {
             return Directory.Exists(path);
         }

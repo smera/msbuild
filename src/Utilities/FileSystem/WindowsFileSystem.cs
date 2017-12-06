@@ -1,16 +1,26 @@
-﻿using System.Collections.Concurrent;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Runtime.Remoting.Contexts;
-using System.Threading.Tasks;
 
 namespace Microsoft.Build.Utilities.FileSystem
 {
+    /// <summary>
+    /// Windows-specific implementation of file system operations using Windows native invocations
+    /// </summary>
     public class WindowsFileSystem : IFileSystemAbstraction
     {
+        private static readonly WindowsFileSystem Instance = new WindowsFileSystem();
+
+        /// <nodoc/>
+        public static WindowsFileSystem Singleton() => WindowsFileSystem.Instance;
+
+        private WindowsFileSystem()
+        { }
+
         /// <inheritdoc/>
         public IEnumerable<string> EnumerateFiles(string path)
         {
@@ -66,7 +76,7 @@ namespace Microsoft.Build.Utilities.FileSystem
         }
 
         /// <inheritdoc/>
-        public bool Exists(string path)
+        public bool DirectoryExists(string path)
         {
             // TODO: reconsider if it makes sense to move this one to native as well
             return Directory.Exists(path);
@@ -82,7 +92,11 @@ namespace Microsoft.Build.Utilities.FileSystem
             FileOrDirectory
         }
 
-        private static IEnumerable<string> EnumerateFileOrDirectories(string directoryPath, FileArtifactType fileArtifactType, string searchPattern = null, SearchOption searchOption = SearchOption.TopDirectoryOnly)
+        private static IEnumerable<string> EnumerateFileOrDirectories(
+            string directoryPath,
+            FileArtifactType fileArtifactType,
+            string searchPattern = null,
+            SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
             var enumeration = new List<string>();
 
@@ -146,7 +160,7 @@ namespace Microsoft.Build.Utilities.FileSystem
 
                 while (true)
                 {
-                    bool isDirectory = (findResult.DwFileAttributes & FileAttributes.Directory) != 0;
+                    var isDirectory = (findResult.DwFileAttributes & FileAttributes.Directory) != 0;
 
                     // There will be entries for the current and parent directories. Ignore those.
                     if (!isDirectory || (findResult.CFileName != "." && findResult.CFileName != ".."))

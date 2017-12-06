@@ -43,12 +43,13 @@ namespace Microsoft.Build.Shared
         internal static readonly string[] directorySeparatorStrings = directorySeparatorCharacters.Select(c => c.ToString()).ToArray();
 
         // For now we hardcode the file system to use here. TODO: extend the interface and plumb it through the evaluator
-        internal static readonly IFileSystemAbstraction DefaultFileSystem = ManagedFileSystem.Singleton();
+        //internal static readonly IFileSystemAbstraction DefaultFileSystem = ManagedFileSystem.Singleton();
+        internal static readonly IFileSystemAbstraction DefaultFileSystem = WindowsFileSystem.Singleton();
 
         internal static readonly GetFileSystemEntries s_defaultGetFileSystemEntries =
             new GetFileSystemEntries((entityType, path, pattern, projectDirectory, stripProjectDirectory) =>
                 GetAccessibleFileSystemEntries(DefaultFileSystem, entityType, path, pattern, projectDirectory, stripProjectDirectory));
-        private static readonly DirectoryExists s_defaultDirectoryExists = new DirectoryExists(DefaultFileSystem.Exists);
+        private static readonly DirectoryExists s_defaultDirectoryExists = new DirectoryExists(DefaultFileSystem.DirectoryExists);
 
         private static readonly Lazy<ConcurrentDictionary<string, string[]>> s_cachedFileEnumerations = new Lazy<ConcurrentDictionary<string, string[]>>(() => new ConcurrentDictionary<string, string[]>(StringComparer.OrdinalIgnoreCase));
         private static readonly Lazy<ConcurrentDictionary<string, object>> s_cachedFileEnumerationsLock = new Lazy<ConcurrentDictionary<string, object>>(() => new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase));
@@ -127,6 +128,7 @@ namespace Microsoft.Build.Shared
         /// <param name="pattern">The pattern to search.</param>
         /// <param name="projectDirectory">The directory for the project within which the call is made</param>
         /// <param name="stripProjectDirectory">If true the project directory should be stripped</param>
+        /// <param name="fileSystem">The file system abstraction to use that implements file system operations</param>
         /// <returns></returns>
         private static ImmutableArray<string> GetAccessibleFileSystemEntries(IFileSystemAbstraction fileSystem, FileSystemEntity entityType, string path, string pattern, string projectDirectory, bool stripProjectDirectory)
         {
@@ -149,6 +151,7 @@ namespace Microsoft.Build.Shared
         /// </summary>
         /// <param name="path"></param>
         /// <param name="pattern"></param>
+        /// <param name="fileSystem">The file system abstraction to use that implements file system operations</param>
         /// <returns>An immutable array of matching file system entries (can be empty).</returns>
         private static ImmutableArray<string> GetAccessibleFilesAndDirectories(IFileSystemAbstraction fileSystem, string path, string pattern)
         {
@@ -212,6 +215,7 @@ namespace Microsoft.Build.Shared
         /// <param name="filespec">The pattern.</param>
         /// <param name="projectDirectory">The project directory</param>
         /// <param name="stripProjectDirectory"></param>
+        /// <param name="fileSystem">The file system abstraction to use that implements file system operations</param>
         /// <returns>Files that can be accessed.</returns>
         private static ImmutableArray<string> GetAccessibleFiles
         (
@@ -279,6 +283,7 @@ namespace Microsoft.Build.Shared
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="pattern">Pattern to match</param>
+        /// <param name="fileSystem">The file system abstraction to use that implements file system operations</param>
         /// <returns>Accessible directories.</returns>
         private static ImmutableArray<string> GetAccessibleDirectories
         (
