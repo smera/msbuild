@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.DirectoryServices;
 using System.IO;
 
 namespace Microsoft.Build.Utilities.FileSystem
@@ -77,6 +78,18 @@ namespace Microsoft.Build.Utilities.FileSystem
         public bool DirectoryExists(string path)
         {
             return Directory.Exists(path);
+        }
+
+        /// <inheritdoc/>
+        public bool FileExists(string path)
+        {
+            return File.Exists(path);
+        }
+
+        /// <inheritdoc/>
+        public bool DirectoryEntryExists(string path)
+        {
+            return DirectoryEntry.Exists(path);
         }
     }
 }

@@ -9,6 +9,7 @@ namespace Microsoft.Build.Utilities.FileSystem
     /// <summary>
     /// Abstracts away some file system operations
     /// </summary>
+    /// TODO: This interface has only enumeration and existence related methods. Consider extending it to include other file system operations.
     public interface IFileSystemAbstraction
     {
         /// <summary>
@@ -60,5 +61,15 @@ namespace Microsoft.Build.Utilities.FileSystem
         /// Determines whether the given path refers to an existing directory on disk.
         /// </summary>
         bool DirectoryExists(string path);
+
+        /// <summary>
+        /// Determines whether the given path refers to an existing file on disk.
+        /// </summary>
+        bool FileExists(string path);
+
+        /// <summary>
+        /// Determines whether the given path refers to an existing entry in the directory service.
+        /// </summary>
+        bool DirectoryEntryExists(string path);
     }
 }

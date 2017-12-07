@@ -582,8 +582,13 @@ namespace Microsoft.Build.Utilities
 }
 namespace Microsoft.Build.Utilities.FileSystem
 {
+    public static partial class FileSystemFactory
+    {
+        public static Microsoft.Build.Utilities.FileSystem.IFileSystemAbstraction GetFileSystem() { throw null; }
+    }
     public partial interface IFileSystemAbstraction
     {
+        bool DirectoryEntryExists(string path);
         bool DirectoryExists(string path);
         System.Collections.Generic.IEnumerable<string> EnumerateDirectories(string path);
         System.Collections.Generic.IEnumerable<string> EnumerateDirectories(string path, string searchPattern);
@@ -594,10 +599,12 @@ namespace Microsoft.Build.Utilities.FileSystem
         System.Collections.Generic.IEnumerable<string> EnumerateFileSystemEntries(string path);
         System.Collections.Generic.IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern);
         System.Collections.Generic.IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern, System.IO.SearchOption searchOption);
+        bool FileExists(string path);
     }
     public sealed partial class ManagedFileSystem : Microsoft.Build.Utilities.FileSystem.IFileSystemAbstraction
     {
         internal ManagedFileSystem() { }
+        public bool DirectoryEntryExists(string path) { throw null; }
         public bool DirectoryExists(string path) { throw null; }
         public System.Collections.Generic.IEnumerable<string> EnumerateDirectories(string path) { throw null; }
         public System.Collections.Generic.IEnumerable<string> EnumerateDirectories(string path, string searchPattern) { throw null; }
@@ -608,6 +615,7 @@ namespace Microsoft.Build.Utilities.FileSystem
         public System.Collections.Generic.IEnumerable<string> EnumerateFileSystemEntries(string path) { throw null; }
         public System.Collections.Generic.IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern) { throw null; }
         public System.Collections.Generic.IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern, System.IO.SearchOption searchOption) { throw null; }
+        public bool FileExists(string path) { throw null; }
         public static Microsoft.Build.Utilities.FileSystem.ManagedFileSystem Singleton() { throw null; }
     }
     public sealed partial class NativeWin32Exception : System.ComponentModel.Win32Exception
@@ -625,6 +633,7 @@ namespace Microsoft.Build.Utilities.FileSystem
     public partial class WindowsFileSystem : Microsoft.Build.Utilities.FileSystem.IFileSystemAbstraction
     {
         internal WindowsFileSystem() { }
+        public bool DirectoryEntryExists(string path) { throw null; }
         public bool DirectoryExists(string path) { throw null; }
         public System.Collections.Generic.IEnumerable<string> EnumerateDirectories(string path) { throw null; }
         public System.Collections.Generic.IEnumerable<string> EnumerateDirectories(string path, string searchPattern) { throw null; }
@@ -635,8 +644,10 @@ namespace Microsoft.Build.Utilities.FileSystem
         public System.Collections.Generic.IEnumerable<string> EnumerateFileSystemEntries(string path) { throw null; }
         public System.Collections.Generic.IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern) { throw null; }
         public System.Collections.Generic.IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern, System.IO.SearchOption searchOption) { throw null; }
+        public bool FileExists(string path) { throw null; }
         public static Microsoft.Build.Utilities.FileSystem.WindowsFileSystem Singleton() { throw null; }
     }
+    [System.CLSCompliantAttribute(false)]
     public static partial class WindowsNative
     {
         public const int ErrorAccessDenied = 5;
@@ -645,8 +656,8 @@ namespace Microsoft.Build.Utilities.FileSystem
         public const uint ErrorNoMoreFiles = (uint)18;
         public const int ErrorPathNotFound = 3;
         public const int ErrorSuccess = 0;
-        [System.Runtime.InteropServices.DllImport("kernel32.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]public static extern Microsoft.Build.Utilities.FileSystem.SafeFindFileHandle FindFirstFileW(string lpFileName, out Microsoft.Build.Utilities.FileSystem.WindowsNative.WIN32_FIND_DATA lpFindFileData);
-        [System.Runtime.InteropServices.DllImport("kernel32.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]public static extern bool FindNextFileW(System.Runtime.InteropServices.SafeHandle hFindFile, out Microsoft.Build.Utilities.FileSystem.WindowsNative.WIN32_FIND_DATA lpFindFileData);
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]public static extern Microsoft.Build.Utilities.FileSystem.SafeFindFileHandle FindFirstFileW(string lpFileName, out Microsoft.Build.Utilities.FileSystem.WindowsNative.Win32FindData lpFindFileData);
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]public static extern bool FindNextFileW(System.Runtime.InteropServices.SafeHandle hFindFile, out Microsoft.Build.Utilities.FileSystem.WindowsNative.Win32FindData lpFindFileData);
         [System.Runtime.InteropServices.DllImport("shlwapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]public static extern bool PathMatchSpecW(string pszFileParam, string pszSpec);
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         public partial struct EnumerateDirectoryResult
@@ -669,7 +680,7 @@ namespace Microsoft.Build.Utilities.FileSystem
             UnknownError = 4,
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-        public partial struct WIN32_FIND_DATA
+        public partial struct Win32FindData
         {
             public string CAlternate;
             public string CFileName;

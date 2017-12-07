@@ -13,6 +13,7 @@ namespace Microsoft.Build.Utilities.FileSystem
     /// <summary>
     /// Native implementation of file system operations
     /// </summary>
+    [CLSCompliant(false)]
     public static class WindowsNative
     {
         /// <summary>
@@ -167,12 +168,11 @@ namespace Microsoft.Build.Utilities.FileSystem
         }
 
         /// <summary>
-        /// <c>WIN32_FIND_DATA</c>
+        /// <c>Win32FindData</c>
         /// </summary>
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        [SuppressMessage("Microsoft.Naming", "CA1707:IdentifiersShouldNotContainUnderscores")]
         [SuppressMessage("Microsoft.Performance", "CA1815:OverrideEqualsAndOperatorEqualsOnValueTypes")]
-        public struct WIN32_FIND_DATA
+        public struct Win32FindData
         {
             /// <summary>
             /// The file attributes of a file
@@ -228,23 +228,26 @@ namespace Microsoft.Build.Utilities.FileSystem
             public string CAlternate;
         }
 
-
+        /// <nodoc/>
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         [SuppressMessage("Microsoft.Interoperability", "CA1401:PInvokesShouldNotBeVisible", Justification = "Needed for custom enumeration.")]
         public static extern SafeFindFileHandle FindFirstFileW(
             string lpFileName,
-            out WIN32_FIND_DATA lpFindFileData);
+            out Win32FindData lpFindFileData);
 
+        /// <nodoc/>
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         [SuppressMessage("Microsoft.Interoperability", "CA1401:PInvokesShouldNotBeVisible", Justification = "Needed for custom enumeration.")]
-        public static extern bool FindNextFileW(SafeHandle hFindFile, out WIN32_FIND_DATA lpFindFileData);
+        public static extern bool FindNextFileW(SafeHandle hFindFile, out Win32FindData lpFindFileData);
 
+        /// <nodoc/>
         [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         [SuppressMessage("Microsoft.Interoperability", "CA1401:PInvokesShouldNotBeVisible", Justification = "Needed for creating symlinks.")]
         public static extern bool PathMatchSpecW([In] string pszFileParam, [In] string pszSpec);
 
+        /// <nodoc/>
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool FindClose(IntPtr findFileHandle);

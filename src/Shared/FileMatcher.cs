@@ -42,9 +42,8 @@ namespace Microsoft.Build.Shared
         internal static readonly char[] directorySeparatorCharacters = { '/', '\\' };
         internal static readonly string[] directorySeparatorStrings = directorySeparatorCharacters.Select(c => c.ToString()).ToArray();
 
-        // For now we hardcode the file system to use here. TODO: extend the interface and plumb it through the evaluator
-        //internal static readonly IFileSystemAbstraction DefaultFileSystem = ManagedFileSystem.Singleton();
-        internal static readonly IFileSystemAbstraction DefaultFileSystem = WindowsFileSystem.Singleton();
+        // TODO: for now this abstraction is specific to FileMatcher, but we can consider plumbing it through the evaluator as a whole
+        internal static readonly IFileSystemAbstraction DefaultFileSystem = FileSystemFactory.GetFileSystem();
 
         internal static readonly GetFileSystemEntries s_defaultGetFileSystemEntries =
             new GetFileSystemEntries((entityType, path, pattern, projectDirectory, stripProjectDirectory) =>

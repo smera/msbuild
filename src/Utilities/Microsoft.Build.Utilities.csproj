@@ -194,6 +194,7 @@
     <Compile Include="CommandLineBuilder.cs">
       <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
     </Compile>
+    <Compile Include="FileSystem\FileSystemFactory.cs" />
     <Compile Include="FileSystem\IFileSystemAbstraction.cs" />
     <Compile Include="FileSystem\ManagedFileSystem.cs" />
     <Compile Include="FileSystem\NativeWin32Exception.cs" />
@@ -284,6 +285,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.DirectoryServices" />
   </ItemGroup>
   <Import Project="..\dir.targets" />
 </Project>

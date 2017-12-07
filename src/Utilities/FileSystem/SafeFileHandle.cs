@@ -20,6 +20,7 @@ namespace Microsoft.Build.Utilities.FileSystem
         {
         }
 
+        /// <nodoc/>
         protected override bool ReleaseHandle()
         {
             return WindowsNative.FindClose(handle);

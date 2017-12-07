@@ -1,13 +1,28 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.DirectoryServices;
 using System.IO;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.Build.Utilities.FileSystem
 {
+    /// <summary>
+    /// The type of file artifact to search for
+    /// </summary>
+    internal enum FileArtifactType : byte
+    {
+        /// <nodoc/>
+        File,
+        /// <nodoc/>
+        Directory,
+        /// <nodoc/>
+        FileOrDirectory
+    }
+
     /// <summary>
     /// Windows-specific implementation of file system operations using Windows native invocations
     /// </summary>
@@ -78,18 +93,39 @@ namespace Microsoft.Build.Utilities.FileSystem
         /// <inheritdoc/>
         public bool DirectoryExists(string path)
         {
-            // TODO: reconsider if it makes sense to move this one to native as well
-            return Directory.Exists(path);
+            return FileOrDirectoryExists(FileArtifactType.Directory, path);
         }
 
-        /// <summary>
-        /// The type of file artifact to search for
-        /// </summary>
-        private enum FileArtifactType : byte
+        /// <inheritdoc/>
+        public bool FileExists(string path)
         {
-            File,
-            Directory,
-            FileOrDirectory
+            return FileOrDirectoryExists(FileArtifactType.File, path);
+        }
+
+        /// <inheritdoc/>
+        public bool DirectoryEntryExists(string path)
+        {
+            return FileOrDirectoryExists(FileArtifactType.FileOrDirectory, path);
+        }
+
+        private static bool FileOrDirectoryExists(FileArtifactType fileArtifactType, string path)
+        {
+            using (var findHandle = WindowsNative.FindFirstFileW(path.TrimEnd('\\'), out WindowsNative.Win32FindData findResult))
+            {
+                if (findHandle.IsInvalid)
+                {
+                    return false;
+                }
+
+                if (fileArtifactType == FileArtifactType.FileOrDirectory)
+                {
+                    return true;
+                }
+
+                var isDirectory = (findResult.DwFileAttributes & FileAttributes.Directory) != 0;
+
+                return !(fileArtifactType == FileArtifactType.Directory ^ isDirectory);
+            }
         }
 
         private static IEnumerable<string> EnumerateFileOrDirectories(
@@ -128,7 +164,7 @@ namespace Microsoft.Build.Utilities.FileSystem
         {
             var searchDirectoryPath = Path.Combine(directoryPath.TrimEnd('\\'), "*");
 
-            using (SafeFindFileHandle findHandle = WindowsNative.FindFirstFileW(searchDirectoryPath, out WindowsNative.WIN32_FIND_DATA findResult))
+            using (var findHandle = WindowsNative.FindFirstFileW(searchDirectoryPath, out WindowsNative.Win32FindData findResult))
             {
                 if (findHandle.IsInvalid)
                 {
@@ -169,7 +205,7 @@ namespace Microsoft.Build.Utilities.FileSystem
                         {
                             if (fileArtifactType == FileArtifactType.FileOrDirectory || !(fileArtifactType == FileArtifactType.Directory ^ isDirectory))
                             {
-                                result.Add(findResult.CFileName);
+                                result.Add(Path.Combine(directoryPath, findResult.CFileName));
                             }
                         }
 
