@@ -110,8 +110,12 @@ namespace Microsoft.Build.Utilities.FileSystem
 
         private static bool FileOrDirectoryExists(FileArtifactType fileArtifactType, string path)
         {
+            // The path gets normalized so we always use backslashes
+            path = NormalizePathToWindowsStyle(path);
+
             using (var findHandle = WindowsNative.FindFirstFileW(path.TrimEnd('\\'), out WindowsNative.Win32FindData findResult))
             {
+                // Any error is interpreted as a file not found. This matches the managed Directory.Exists and File.Exists behavior
                 if (findHandle.IsInvalid)
                 {
                     return false;
@@ -135,6 +139,10 @@ namespace Microsoft.Build.Utilities.FileSystem
             SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
             var enumeration = new List<string>();
+
+            // The search pattern and path gets normalized so we always use backslashes
+            searchPattern = NormalizePathToWindowsStyle(searchPattern);
+            directoryPath = NormalizePathToWindowsStyle(directoryPath);
 
             var result = CustomEnumerateDirectoryEntries(
                 directoryPath,
@@ -201,6 +209,7 @@ namespace Microsoft.Build.Utilities.FileSystem
                     // There will be entries for the current and parent directories. Ignore those.
                     if (!isDirectory || (findResult.CFileName != "." && findResult.CFileName != ".."))
                     {
+                        // Make sure pattern and directory/file filters are honored
                         if (pattern == null || WindowsNative.PathMatchSpecW(findResult.CFileName, pattern))
                         {
                             if (fileArtifactType == FileArtifactType.FileOrDirectory || !(fileArtifactType == FileArtifactType.Directory ^ isDirectory))
@@ -209,6 +218,7 @@ namespace Microsoft.Build.Utilities.FileSystem
                             }
                         }
 
+                        // Recursively go into subfolders if specified
                         if (searchOption == SearchOption.AllDirectories && isDirectory)
                         {
                             var recurs = CustomEnumerateDirectoryEntries(
@@ -245,6 +255,11 @@ namespace Microsoft.Build.Utilities.FileSystem
                     }
                 }
             }
+        }
+
+        private static string NormalizePathToWindowsStyle(string path)
+        {
+            return path?.Replace("/", "\\");
         }
     }
 }

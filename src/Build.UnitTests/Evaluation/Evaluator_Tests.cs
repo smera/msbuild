@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -1051,6 +1052,8 @@ namespace Microsoft.Build.UnitTests.Evaluation
             string projectPath = null;
             string directory = null;
             string directory2 = null;
+
+            Debugger.Launch();
 
             try
             {
