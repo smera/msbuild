@@ -13,8 +13,8 @@ namespace Microsoft.Build.Utilities.FileSystem
         /// <nodoc/>
         public static IFileSystemAbstraction GetFileSystem()
         {
-            // The windows-specific file system is only available on WindowsXp or higher
-            if (IsWinXpOrHigher())
+            // The windows-specific file system is only available on Windows Vista or higher
+            if (IsWinVistaOrHigher())
             {
                 return WindowsFileSystem.Singleton();
             }
@@ -23,11 +23,10 @@ namespace Microsoft.Build.Utilities.FileSystem
             return ManagedFileSystem.Singleton();
         }
 
-        private static bool IsWinXpOrHigher()
+        private static bool IsWinVistaOrHigher()
         {
             var os = Environment.OSVersion;
-            return os.Platform == PlatformID.Win32NT &&
-                   ((os.Version.Major > 5) || ((os.Version.Major == 5) && (os.Version.Minor >= 1)));
+            return os.Platform == PlatformID.Win32NT && os.Version.Major >= 6;
         }
     }
 }

@@ -21,51 +21,15 @@ namespace Microsoft.Build.Utilities.FileSystem
         { }
 
         /// <inheritdoc/>
-        public IEnumerable<string> EnumerateFiles(string path)
-        {
-            return Directory.EnumerateFiles(path);
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<string> EnumerateFiles(string path, string searchPattern)
-        {
-            return Directory.EnumerateFiles(path, searchPattern);
-        }
-
-        /// <inheritdoc/>
         public IEnumerable<string> EnumerateFiles(string path, string searchPattern, SearchOption searchOption)
         {
             return Directory.EnumerateFiles(path, searchPattern, searchOption);
         }
 
         /// <inheritdoc/>
-        public IEnumerable<string> EnumerateDirectories(string path)
-        {
-            return Directory.EnumerateDirectories(path);
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<string> EnumerateDirectories(string path, string searchPattern)
-        {
-            return Directory.EnumerateDirectories(path, searchPattern);
-        }
-
-        /// <inheritdoc/>
         public IEnumerable<string> EnumerateDirectories(string path, string searchPattern, SearchOption searchOption)
         {
             return Directory.EnumerateDirectories(path, searchPattern, searchOption);
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<string> EnumerateFileSystemEntries(string path)
-        {
-            return Directory.EnumerateFileSystemEntries(path);
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern)
-        {
-            return Directory.EnumerateFileSystemEntries(path, searchPattern);
         }
 
         /// <inheritdoc/>

@@ -37,51 +37,15 @@ namespace Microsoft.Build.Utilities.FileSystem
         { }
 
         /// <inheritdoc/>
-        public IEnumerable<string> EnumerateFiles(string path)
-        {
-            return EnumerateFileOrDirectories(path, FileArtifactType.File);
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<string> EnumerateFiles(string path, string searchPattern)
-        {
-            return EnumerateFileOrDirectories(path, FileArtifactType.File, searchPattern);
-        }
-
-        /// <inheritdoc/>
         public IEnumerable<string> EnumerateFiles(string path, string searchPattern, SearchOption searchOption)
         {
             return EnumerateFileOrDirectories(path, FileArtifactType.File, searchPattern, searchOption);
         }
 
         /// <inheritdoc/>
-        public IEnumerable<string> EnumerateDirectories(string path)
-        {
-            return EnumerateFileOrDirectories(path, FileArtifactType.Directory);
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<string> EnumerateDirectories(string path, string searchPattern)
-        {
-            return EnumerateFileOrDirectories(path, FileArtifactType.Directory, searchPattern);
-        }
-
-        /// <inheritdoc/>
         public IEnumerable<string> EnumerateDirectories(string path, string searchPattern, SearchOption searchOption)
         {
             return EnumerateFileOrDirectories(path, FileArtifactType.Directory, searchPattern, searchOption);
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<string> EnumerateFileSystemEntries(string path)
-        {
-            return EnumerateFileOrDirectories(path, FileArtifactType.FileOrDirectory);
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern)
-        {
-            return EnumerateFileOrDirectories(path, FileArtifactType.FileOrDirectory, searchPattern);
         }
 
         /// <inheritdoc/>
@@ -135,7 +99,7 @@ namespace Microsoft.Build.Utilities.FileSystem
         private static IEnumerable<string> EnumerateFileOrDirectories(
             string directoryPath,
             FileArtifactType fileArtifactType,
-            string searchPattern = null,
+            string searchPattern,
             SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
             var enumeration = new List<string>();
@@ -210,9 +174,14 @@ namespace Microsoft.Build.Utilities.FileSystem
                     if (!isDirectory || (findResult.CFileName != "." && findResult.CFileName != ".."))
                     {
                         // Make sure pattern and directory/file filters are honored
-                        if (pattern == null || WindowsNative.PathMatchSpecW(findResult.CFileName, pattern))
+                        // We special case the "*" pattern since it is the default when no pattern is specified
+                        // so we avoid calling the matching function
+                        if (pattern == "*" ||
+                            WindowsNative.PathMatchSpecExW(findResult.CFileName, pattern, WindowsNative.PmsfNormal) ==
+                            WindowsNative.ErrorSuccess)
                         {
-                            if (fileArtifactType == FileArtifactType.FileOrDirectory || !(fileArtifactType == FileArtifactType.Directory ^ isDirectory))
+                            if (fileArtifactType == FileArtifactType.FileOrDirectory ||
+                                !(fileArtifactType == FileArtifactType.Directory ^ isDirectory))
                             {
                                 result.Add(Path.Combine(directoryPath, findResult.CFileName));
                             }
@@ -259,6 +228,16 @@ namespace Microsoft.Build.Utilities.FileSystem
 
         private static string NormalizePathToWindowsStyle(string path)
         {
+            // We make sure all paths are under max path, in some cases
+            // the native functions used are slightly more resilient to
+            // max path issues, but we want to mimic the managed implementation
+            // at this regard
+            if (path?.Length > WindowsNative.MaxPath)
+            {
+                throw new PathTooLongException(
+                    $"The path '${path}' exceeds the length limit of '${WindowsNative.MaxPath}' characters.");
+            }
+
             return path?.Replace("/", "\\");
         }
     }

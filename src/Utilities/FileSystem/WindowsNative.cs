@@ -19,7 +19,7 @@ namespace Microsoft.Build.Utilities.FileSystem
         /// <summary>
         /// Maximum path length.
         /// </summary>
-        private const int MaxPath = 260;
+        public const int MaxPath = 260;
 
         /// <summary>
         /// ERROR_SUCCESS
@@ -51,6 +51,12 @@ namespace Microsoft.Build.Utilities.FileSystem
         /// </summary>
         public const uint ErrorNoMoreFiles = 0x12;
 
+        /// <summary>
+        /// The pszSpec parameter points to a single file name pattern to be matched.
+        /// <see ref="https://msdn.microsoft.com/en-us/library/windows/desktop/bb773728(v=vs.85).aspx"/>
+        /// </summary>
+        public const int PmsfNormal = 0;
+        
         /// <summary>
         /// Status of attempting to enumerate a directory.
         /// </summary>
@@ -243,9 +249,8 @@ namespace Microsoft.Build.Utilities.FileSystem
 
         /// <nodoc/>
         [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
-        [return: MarshalAs(UnmanagedType.Bool)]
         [SuppressMessage("Microsoft.Interoperability", "CA1401:PInvokesShouldNotBeVisible", Justification = "Needed for creating symlinks.")]
-        public static extern bool PathMatchSpecW([In] string pszFileParam, [In] string pszSpec);
+        public static extern int PathMatchSpecExW([In] string pszFileParam, [In] string pszSpec, [In] int flags);
 
         /// <nodoc/>
         [DllImport("kernel32.dll", SetLastError = true)]

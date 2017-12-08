@@ -590,15 +590,9 @@ namespace Microsoft.Build.Utilities.FileSystem
     {
         bool DirectoryEntryExists(string path);
         bool DirectoryExists(string path);
-        System.Collections.Generic.IEnumerable<string> EnumerateDirectories(string path);
-        System.Collections.Generic.IEnumerable<string> EnumerateDirectories(string path, string searchPattern);
-        System.Collections.Generic.IEnumerable<string> EnumerateDirectories(string path, string searchPattern, System.IO.SearchOption searchOption);
-        System.Collections.Generic.IEnumerable<string> EnumerateFiles(string path);
-        System.Collections.Generic.IEnumerable<string> EnumerateFiles(string path, string searchPattern);
-        System.Collections.Generic.IEnumerable<string> EnumerateFiles(string path, string searchPattern, System.IO.SearchOption searchOption);
-        System.Collections.Generic.IEnumerable<string> EnumerateFileSystemEntries(string path);
-        System.Collections.Generic.IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern);
-        System.Collections.Generic.IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern, System.IO.SearchOption searchOption);
+        System.Collections.Generic.IEnumerable<string> EnumerateDirectories(string path, string searchPattern="*", System.IO.SearchOption searchOption=(System.IO.SearchOption)(0));
+        System.Collections.Generic.IEnumerable<string> EnumerateFiles(string path, string searchPattern="*", System.IO.SearchOption searchOption=(System.IO.SearchOption)(0));
+        System.Collections.Generic.IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern="*", System.IO.SearchOption searchOption=(System.IO.SearchOption)(0));
         bool FileExists(string path);
     }
     public sealed partial class ManagedFileSystem : Microsoft.Build.Utilities.FileSystem.IFileSystemAbstraction
@@ -606,14 +600,8 @@ namespace Microsoft.Build.Utilities.FileSystem
         internal ManagedFileSystem() { }
         public bool DirectoryEntryExists(string path) { throw null; }
         public bool DirectoryExists(string path) { throw null; }
-        public System.Collections.Generic.IEnumerable<string> EnumerateDirectories(string path) { throw null; }
-        public System.Collections.Generic.IEnumerable<string> EnumerateDirectories(string path, string searchPattern) { throw null; }
         public System.Collections.Generic.IEnumerable<string> EnumerateDirectories(string path, string searchPattern, System.IO.SearchOption searchOption) { throw null; }
-        public System.Collections.Generic.IEnumerable<string> EnumerateFiles(string path) { throw null; }
-        public System.Collections.Generic.IEnumerable<string> EnumerateFiles(string path, string searchPattern) { throw null; }
         public System.Collections.Generic.IEnumerable<string> EnumerateFiles(string path, string searchPattern, System.IO.SearchOption searchOption) { throw null; }
-        public System.Collections.Generic.IEnumerable<string> EnumerateFileSystemEntries(string path) { throw null; }
-        public System.Collections.Generic.IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern) { throw null; }
         public System.Collections.Generic.IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern, System.IO.SearchOption searchOption) { throw null; }
         public bool FileExists(string path) { throw null; }
         public static Microsoft.Build.Utilities.FileSystem.ManagedFileSystem Singleton() { throw null; }
@@ -635,14 +623,8 @@ namespace Microsoft.Build.Utilities.FileSystem
         internal WindowsFileSystem() { }
         public bool DirectoryEntryExists(string path) { throw null; }
         public bool DirectoryExists(string path) { throw null; }
-        public System.Collections.Generic.IEnumerable<string> EnumerateDirectories(string path) { throw null; }
-        public System.Collections.Generic.IEnumerable<string> EnumerateDirectories(string path, string searchPattern) { throw null; }
         public System.Collections.Generic.IEnumerable<string> EnumerateDirectories(string path, string searchPattern, System.IO.SearchOption searchOption) { throw null; }
-        public System.Collections.Generic.IEnumerable<string> EnumerateFiles(string path) { throw null; }
-        public System.Collections.Generic.IEnumerable<string> EnumerateFiles(string path, string searchPattern) { throw null; }
         public System.Collections.Generic.IEnumerable<string> EnumerateFiles(string path, string searchPattern, System.IO.SearchOption searchOption) { throw null; }
-        public System.Collections.Generic.IEnumerable<string> EnumerateFileSystemEntries(string path) { throw null; }
-        public System.Collections.Generic.IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern) { throw null; }
         public System.Collections.Generic.IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern, System.IO.SearchOption searchOption) { throw null; }
         public bool FileExists(string path) { throw null; }
         public static Microsoft.Build.Utilities.FileSystem.WindowsFileSystem Singleton() { throw null; }
@@ -656,9 +638,11 @@ namespace Microsoft.Build.Utilities.FileSystem
         public const uint ErrorNoMoreFiles = (uint)18;
         public const int ErrorPathNotFound = 3;
         public const int ErrorSuccess = 0;
+        public const int MaxPath = 260;
+        public const int PmsfNormal = 0;
         [System.Runtime.InteropServices.DllImport("kernel32.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]public static extern Microsoft.Build.Utilities.FileSystem.SafeFindFileHandle FindFirstFileW(string lpFileName, out Microsoft.Build.Utilities.FileSystem.WindowsNative.Win32FindData lpFindFileData);
         [System.Runtime.InteropServices.DllImport("kernel32.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]public static extern bool FindNextFileW(System.Runtime.InteropServices.SafeHandle hFindFile, out Microsoft.Build.Utilities.FileSystem.WindowsNative.Win32FindData lpFindFileData);
-        [System.Runtime.InteropServices.DllImport("shlwapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]public static extern bool PathMatchSpecW(string pszFileParam, string pszSpec);
+        [System.Runtime.InteropServices.DllImport("shlwapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]public static extern int PathMatchSpecExW(string pszFileParam, string pszSpec, int flags);
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         public partial struct EnumerateDirectoryResult
         {

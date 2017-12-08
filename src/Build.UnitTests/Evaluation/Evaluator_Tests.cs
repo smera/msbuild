@@ -1053,8 +1053,6 @@ namespace Microsoft.Build.UnitTests.Evaluation
             string directory = null;
             string directory2 = null;
 
-            Debugger.Launch();
-
             try
             {
                 directory = Path.Combine(Path.GetTempPath(), "fol$der");
