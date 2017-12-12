@@ -14,7 +14,7 @@ namespace Microsoft.Build.Utilities.FileSystem
     /// Native implementation of file system operations
     /// </summary>
     [CLSCompliant(false)]
-    public static class WindowsNative
+    internal static class WindowsNative
     {
         /// <summary>
         /// Maximum path length.
