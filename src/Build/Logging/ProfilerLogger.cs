@@ -121,7 +121,8 @@ namespace Microsoft.Build.Logging
             {
                 ProfilerResult profiledResult;
                 var result = _profiledResults.TryDequeue(out profiledResult);
-                Debug.Assert(result, "Expected a non empty queue, this method is not supposed to be called in a multithreaded way");
+                Debug.Assert(result,
+                    "Expected a non empty queue, this method is not supposed to be called in a multithreaded way");
 
                 foreach (var pair in profiledResult.ProfiledLocations)
                 {
@@ -138,14 +139,68 @@ namespace Microsoft.Build.Logging
                 }
             }
 
-            // Add one single item representing the total aggregated evaluation time for globs
+            // After aggregating all items, prune the ones that are too small to report
+            _aggregatedLocations = PruneSmallItems(_aggregatedLocations);
+
+            // Add one single top-level item representing the total aggregated evaluation time for globs.
             var aggregatedGlobs = _aggregatedLocations.Keys
                 .Where(key => key.Kind == EvaluationLocationKind.Glob)
-                .Aggregate(new ProfiledLocation(), (profiledLocation, evaluationLocation) => AggregateProfiledLocation(profiledLocation, _aggregatedLocations[evaluationLocation]));
+                .Aggregate(new ProfiledLocation(),
+                    (profiledLocation, evaluationLocation) =>
+                        AggregateProfiledLocation(profiledLocation, _aggregatedLocations[evaluationLocation]));
 
-            _aggregatedLocations[EvaluationLocation.CreateLocationForAggregatedGlob()] = aggregatedGlobs;
+            _aggregatedLocations[EvaluationLocation.CreateLocationForAggregatedGlob()] =
+                aggregatedGlobs;
 
             return new ProfilerResult(_aggregatedLocations);
+        }
+
+        private static Dictionary<EvaluationLocation, ProfiledLocation> PruneSmallItems(IDictionary<EvaluationLocation, ProfiledLocation> aggregatedLocations)
+        {
+            var result = new Dictionary<EvaluationLocation, ProfiledLocation>();
+
+            // Let's build an index of profiled locations by id, to speed up subsequent queries
+            var idTable = aggregatedLocations.ToDictionary(pair => pair.Key.Id, pair => new Pair<EvaluationLocation, ProfiledLocation>(pair.Key, pair.Value));
+
+            // We want to keep all evaluation pass entries plus the big enough regular entries
+            foreach (var prunedPair in aggregatedLocations.Where(pair => pair.Key.IsEvaluationPass || !IsTooSmall(pair.Value)))
+            {
+                var key = prunedPair.Key;
+                // We already know this pruned pair is something we want to keep. But the parent may be broken since we may remove it
+                var parentId = FindBigEnoughParentId(idTable, key.ParentId);
+                result[key.WithParentId(parentId)] = prunedPair.Value;
+            }
+            
+            return result;
+        }
+
+        /// <summary>
+        /// Finds the first ancestor of parentId (which could be itself) that is either an evaluation pass location or a big enough profiled data
+        /// </summary>
+        private static int? FindBigEnoughParentId(IDictionary<int, Pair<EvaluationLocation, ProfiledLocation>> idTable, int? parentId)
+        {
+            // The parent id is null, which means the item was pointing to an evaluation pass item. So we keep it as is.
+            if (!parentId.HasValue)
+            {
+                return null;
+            }
+
+            var pair = idTable[parentId.Value];
+
+            // We go up the parent relationship until we find an item that is either an evaluation pass or a big enough regular item
+            while (!pair.Key.IsEvaluationPass || IsTooSmall(pair.Value))
+            {
+                Debug.Assert(pair.Key.ParentId.HasValue, "A location that is not an evaluation pass should always have a parent");
+                pair = idTable[pair.Key.ParentId.Value];
+            }
+
+            return pair.Key.Id;
+        }
+
+        private static bool IsTooSmall(ProfiledLocation profiledData)
+        {
+            return profiledData.InclusiveTime.TotalMilliseconds < 1 ||
+                   profiledData.ExclusiveTime.TotalMilliseconds < 1;
         }
 
         private static ProfiledLocation AggregateProfiledLocation(ProfiledLocation location, ProfiledLocation otherLocation)

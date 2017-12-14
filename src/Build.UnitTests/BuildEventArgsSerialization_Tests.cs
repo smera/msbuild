@@ -355,7 +355,7 @@ namespace Microsoft.Build.UnitTests
                         new ProfiledLocation(TimeSpan.FromSeconds(1), TimeSpan.FromHours(2), 2)
                     },
                     {
-                        new EvaluationLocation(EvaluationPass.Properties, "desc2", "file1", null, "element2", "description2", EvaluationLocationKind.Item),
+                        new EvaluationLocation(EvaluationPass.Properties, "desc2", "file1", null, "element2", "description2", EvaluationLocationKind.Element),
                         new ProfiledLocation(TimeSpan.FromSeconds(1), TimeSpan.FromHours(2), 2)
                     }
                 })
