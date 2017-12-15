@@ -582,6 +582,13 @@ namespace Microsoft.Build.Framework.Profiler
         public Microsoft.Build.Framework.Profiler.EvaluationLocation WithGlob(string globDescription) { throw null; }
         public Microsoft.Build.Framework.Profiler.EvaluationLocation WithParentId(System.Nullable<int> parentId) { throw null; }
     }
+    public partial class EvaluationLocationIdAgnosticComparer : System.Collections.Generic.IEqualityComparer<Microsoft.Build.Framework.Profiler.EvaluationLocation>
+    {
+        internal EvaluationLocationIdAgnosticComparer() { }
+        public static Microsoft.Build.Framework.Profiler.EvaluationLocationIdAgnosticComparer Singleton;
+        public bool Equals(Microsoft.Build.Framework.Profiler.EvaluationLocation x, Microsoft.Build.Framework.Profiler.EvaluationLocation y) { throw null; }
+        public int GetHashCode(Microsoft.Build.Framework.Profiler.EvaluationLocation obj) { throw null; }
+    }
     public enum EvaluationLocationKind : byte
     {
         Condition = (byte)1,
